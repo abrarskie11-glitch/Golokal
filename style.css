@@ -1,0 +1,93 @@
+
+body {
+    margin: 0;
+    font-family: Arial, sans-serif;
+    background: #f2f7f3;
+    color: #20352a;
+}
+
+header {
+    background: #087f5b;
+    color: white;
+    padding: 20px;
+    text-align: center;
+}
+
+header h1 {
+    margin: 0;
+    font-size: 32px;
+}
+
+header span {
+    color: #b7f7c8;
+}
+
+.hero {
+    text-align: center;
+    padding: 30px 20px;
+    background: #dff5e6;
+}
+
+.hero h2 {
+    color: #087f5b;
+}
+
+.card {
+    max-width: 500px;
+    margin: 24px auto;
+    padding: 24px;
+    background: white;
+    border-radius: 12px;
+    box-shadow: 0 3px 12px #00000010;
+}
+
+label {
+    display: block;
+    margin-top: 14px;
+    margin-bottom: 6px;
+    font-weight: bold;
+}
+
+input, select {
+    width: 100%;
+    padding: 12px;
+    box-sizing: border-box;
+    border: 1px solid #ccd8cf;
+    border-radius: 7px;
+    font-size: 15px;
+}
+
+button {
+    width: 100%;
+    margin-top: 20px;
+    padding: 13px;
+    border: none;
+    border-radius: 7px;
+    background: #087f5b;
+    color: white;
+    font-size: 16px;
+    font-weight: bold;
+    cursor: pointer;
+}
+
+button:hover {
+    background: #066b4d;
+}
+
+#pesan {
+    color: #087f5b;
+    font-weight: bold;
+}
+
+footer {
+    padding: 20px;
+    text-align: center;
+    color: #66756b;
+}
+
+@media (max-width: 600px) {
+    .card {
+        margin: 18px 12px;
+        padding: 18px;
+    }
+}

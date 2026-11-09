@@ -1,0 +1,65 @@
+
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GoLokal - Pesan Layanan</title>
+    <link rel="stylesheet" href="style.css">
+    <script src="app.js" defer></script>
+</head>
+<body>
+
+    <header>
+        <h1>Go<span>Lokal</span></h1>
+        <p>Layanan lokal, lebih mudah!</p>
+    </header>
+
+    <main>
+        <section class="hero">
+            <h2>Mau pergi ke mana hari ini?</h2>
+            <p>Pesan ojek atau kurir dengan mudah melalui GoLokal.</p>
+        </section>
+
+        <section class="card">
+            <h2>Buat Pesanan</h2>
+
+            <form id="orderForm">
+                <label for="nama">Nama pelanggan</label>
+                <input type="text" id="nama"
+                    placeholder="Masukkan nama kamu" required>
+
+                <label for="layanan">Pilih layanan</label>
+                <select id="layanan">
+                    <option value="Ojek">GoOjek - Rp5.000</option>
+                    <option value="Kurir">GoKurir - Rp8.000</option>
+                </select>
+
+                <label for="asal">Lokasi penjemputan</label>
+                <input type="text" id="asal"
+                    placeholder="Contoh: Kampus" required>
+
+                <label for="tujuan">Lokasi tujuan</label>
+                <input type="text" id="tujuan"
+                    placeholder="Contoh: Perpustakaan" required>
+
+                <button type="submit">Buat Pesanan</button>
+            </form>
+
+            <p id="pesan"></p>
+        </section>
+
+        <section class="card">
+            <h2>Pesanan Saya</h2>
+            <div id="daftarPesanan">
+                <p>Belum ada pesanan.</p>
+            </div>
+        </section>
+    </main>
+
+    <footer>
+        <p>GoLokal | Project Cloud Computing</p>
+    </footer>
+
+</body>
+</html>

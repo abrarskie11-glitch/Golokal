@@ -1,0 +1,287 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GoLokal - Dashboard Driver</title>
+
+    <style>
+        body {
+            margin: 0;
+            font-family: Arial, sans-serif;
+            background: #f2f7f3;
+            color: #20352a;
+        }
+
+        header {
+            background: #087f5b;
+            color: white;
+            padding: 20px;
+            text-align: center;
+        }
+
+        header h1 {
+            margin: 0;
+        }
+
+        header span {
+            color: #b7f7c8;
+        }
+
+        main {
+            max-width: 700px;
+            margin: 30px auto;
+            padding: 0 15px;
+        }
+
+        .card {
+            background: white;
+            padding: 20px;
+            border-radius: 12px;
+            box-shadow: 0 3px 12px #00000010;
+        }
+
+        .pesanan {
+            border: 1px solid #ccd8cf;
+            padding: 15px;
+            margin-top: 15px;
+            border-radius: 8px;
+        }
+
+        select {
+            padding: 10px;
+            border-radius: 6px;
+            border: 1px solid #ccd8cf;
+            margin-top: 8px;
+        }
+
+        button {
+            padding: 10px 15px;
+            border: none;
+            border-radius: 6px;
+            background: #087f5b;
+            color: white;
+            cursor: pointer;
+        }
+
+        #pesan {
+            font-weight: bold;
+            margin-top: 15px;
+        }
+    </style>
+</head>
+
+<body>
+
+<header>
+    <h1>Go<span>Lokal</span></h1>
+    <p>Dashboard Driver / Admin</p>
+    <button onclick="logout()">
+    Logout
+</button>
+</header>
+
+<main>
+
+    <div class="card">
+
+        <h2>Daftar Pesanan</h2>
+
+        <button onclick="ambilPesanan()">
+            🔄 Refresh Pesanan
+        </button>
+
+        <p id="pesan">Menghubungkan ke backend...</p>
+
+        <div id="daftarPesanan"></div>
+
+    </div>
+
+</main>
+
+<script>
+
+const user = JSON.parse(
+    localStorage.getItem("user")
+);
+
+if (!user || user.role !== "admin") {
+
+    alert("Akses ditolak! Halaman ini khusus Admin.");
+
+    window.location.href = "login.html";
+
+}
+
+const API_URL = "http://localhost:8080";
+
+async function ambilPesanan() {
+
+    const pesan = document.getElementById("pesan");
+    const daftar = document.getElementById("daftarPesanan");
+
+    pesan.textContent = "Memuat pesanan...";
+    daftar.replaceChildren();
+
+    try {
+
+        const response = await fetch(
+            API_URL + "/api/orders"
+        );
+
+        console.log("Status API:", response.status);
+
+        if (!response.ok) {
+            throw new Error(
+                "API mengembalikan status " + response.status
+            );
+        }
+
+        const orders = await response.json();
+
+        console.log("Data pesanan:", orders);
+
+        pesan.textContent = "";
+
+        if (orders.length === 0) {
+
+            pesan.textContent = "Belum ada pesanan.";
+
+            return;
+        }
+
+        orders.forEach(order => {
+
+            const kartu = document.createElement("div");
+
+            kartu.className = "pesanan";
+
+            kartu.innerHTML = `
+                <h3>Pesanan #${order.id}</h3>
+
+                <p>
+                    <strong>Nama:</strong>
+                    ${order.nama}
+                </p>
+
+                <p>
+                    <strong>Layanan:</strong>
+                    ${order.layanan}
+                </p>
+
+                <p>
+                    <strong>Asal:</strong>
+                    ${order.asal}
+                </p>
+
+                <p>
+                    <strong>Tujuan:</strong>
+                    ${order.tujuan}
+                </p>
+
+                <p>
+                    <strong>Harga:</strong>
+                    Rp${Number(order.harga).toLocaleString("id-ID")}
+                </p>
+
+                <p>
+                    <strong>Status:</strong>
+                    ${order.status}
+                </p>
+
+                <label>
+                    Ubah Status:
+                </label>
+
+                <br>
+
+                <select onchange="ubahStatus(${order.id}, this.value)">
+
+                    <option value="Menunggu"
+                        ${order.status === "Menunggu" ? "selected" : ""}>
+                        Menunggu
+                    </option>
+
+                    <option value="Diproses"
+                        ${order.status === "Diproses" ? "selected" : ""}>
+                        Diproses
+                    </option>
+
+                    <option value="Selesai"
+                        ${order.status === "Selesai" ? "selected" : ""}>
+                        Selesai
+                    </option>
+
+                </select>
+            `;
+
+            daftar.appendChild(kartu);
+
+        });
+
+    } catch (error) {
+
+        console.error("ERROR:", error);
+
+        pesan.textContent =
+            "❌ Gagal terhubung ke backend: " + error.message;
+    }
+}
+
+
+async function ubahStatus(id, status) {
+
+    try {
+
+        const response = await fetch(
+            API_URL + "/api/orders/" + id + "/status",
+            {
+                method: "PUT",
+
+                headers: {
+                    "Content-Type": "application/json"
+                },
+
+                body: JSON.stringify({
+                    status: status
+                })
+            }
+        );
+
+        const data = await response.json();
+
+        console.log("Hasil perubahan:", data);
+
+        if (!response.ok) {
+            throw new Error(data.message);
+        }
+
+        alert("Status berhasil diubah!");
+
+        ambilPesanan();
+
+    } catch (error) {
+
+        console.error("ERROR:", error);
+
+        alert(
+            "Gagal mengubah status: " +
+            error.message
+        );
+    }
+}
+
+function logout() {
+
+    localStorage.removeItem("user");
+
+    window.location.href = "login.html";
+
+}
+
+ambilPesanan();
+
+</script>
+
+</body>
+</html>

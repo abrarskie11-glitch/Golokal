@@ -1,0 +1,207 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GoLokal - Login</title>
+
+    <style>
+        body {
+            margin: 0;
+            font-family: Arial, sans-serif;
+            background: #f2f7f3;
+        }
+
+        .container {
+            max-width: 400px;
+            margin: 60px auto;
+            padding: 25px;
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 3px 15px #00000015;
+        }
+
+        h1 {
+            text-align: center;
+            color: #087f5b;
+        }
+
+        h1 span {
+            color: #48a868;
+        }
+
+        h2 {
+            margin-top: 25px;
+        }
+
+        label {
+            display: block;
+            margin-top: 15px;
+            margin-bottom: 6px;
+            font-weight: bold;
+        }
+
+        input {
+            width: 100%;
+            box-sizing: border-box;
+            padding: 12px;
+            border: 1px solid #ccd8cf;
+            border-radius: 7px;
+        }
+
+        button {
+            width: 100%;
+            margin-top: 20px;
+            padding: 12px;
+            border: none;
+            border-radius: 7px;
+            background: #087f5b;
+            color: white;
+            font-size: 16px;
+            cursor: pointer;
+        }
+
+        button:hover {
+            background: #066b4d;
+        }
+
+        #pesan {
+            text-align: center;
+            font-weight: bold;
+        }
+
+        .register {
+            text-align: center;
+            margin-top: 20px;
+        }
+
+        a {
+            color: #087f5b;
+            font-weight: bold;
+        }
+    </style>
+</head>
+
+<body>
+
+<div class="container">
+
+    <h1>Go<span>Lokal</span></h1>
+
+    <h2>Login</h2>
+
+    <form id="loginForm">
+
+        <label>Username</label>
+
+        <input
+            type="text"
+            id="username"
+            placeholder="Masukkan username"
+            required
+        >
+
+        <label>Password</label>
+
+        <input
+            type="password"
+            id="password"
+            placeholder="Masukkan password"
+            required
+        >
+
+        <button type="submit">
+            Login
+        </button>
+
+    </form>
+
+    <p id="pesan"></p>
+
+    <div class="register">
+        Belum punya akun?
+        <a href="register.html">Daftar sekarang</a>
+    </div>
+
+</div>
+
+<script>
+
+const form = document.getElementById("loginForm");
+const pesan = document.getElementById("pesan");
+
+const API_URL = "http://localhost:8080";
+
+form.addEventListener("submit", async function(event) {
+
+    event.preventDefault();
+
+    const username =
+        document.getElementById("username").value;
+
+    const password =
+        document.getElementById("password").value;
+
+    pesan.textContent = "Memproses login...";
+
+    try {
+
+        const response = await fetch(
+            API_URL + "/api/login",
+            {
+                method: "POST",
+
+                headers: {
+                    "Content-Type": "application/json"
+                },
+
+                body: JSON.stringify({
+                    username: username,
+                    password: password
+                })
+            }
+        );
+
+        const data = await response.json();
+
+        if (!response.ok) {
+            throw new Error(data.message);
+        }
+
+        // Simpan data user
+        localStorage.setItem(
+            "user",
+            JSON.stringify(data.user)
+        );
+
+        pesan.textContent =
+    "Login berhasil!";
+
+setTimeout(() => {
+
+    if (data.user.role === "admin") {
+
+        window.location.href = "admin.html";
+
+    } else {
+
+        window.location.href = "index.html";
+
+    }
+
+}, 700);
+
+    } catch (error) {
+
+        console.error(error);
+
+        pesan.textContent =
+            "❌ " + error.message;
+    }
+
+});
+
+</script>
+
+</body>
+</html>
