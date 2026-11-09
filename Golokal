@@ -1,0 +1,929 @@
+
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GoLokal - Pesan Layanan</title>
+    <link rel="stylesheet" href="style.css">
+    <script src="app.js" defer></script>
+</head>
+<body>
+
+    <header>
+        <h1>Go<span>Lokal</span></h1>
+        <p>Layanan lokal, lebih mudah!</p>
+    </header>
+
+    <main>
+        <section class="hero">
+            <h2>Mau pergi ke mana hari ini?</h2>
+            <p>Pesan ojek atau kurir dengan mudah melalui GoLokal.</p>
+        </section>
+
+        <section class="card">
+            <h2>Buat Pesanan</h2>
+
+            <form id="orderForm">
+                <label for="nama">Nama pelanggan</label>
+                <input type="text" id="nama"
+                    placeholder="Masukkan nama kamu" required>
+
+                <label for="layanan">Pilih layanan</label>
+                <select id="layanan">
+                    <option value="Ojek">GoOjek - Rp5.000</option>
+                    <option value="Kurir">GoKurir - Rp8.000</option>
+                </select>
+
+                <label for="asal">Lokasi penjemputan</label>
+                <input type="text" id="asal"
+                    placeholder="Contoh: Kampus" required>
+
+                <label for="tujuan">Lokasi tujuan</label>
+                <input type="text" id="tujuan"
+                    placeholder="Contoh: Perpustakaan" required>
+
+                <button type="submit">Buat Pesanan</button>
+            </form>
+
+            <p id="pesan"></p>
+        </section>
+
+        <section class="card">
+            <h2>Pesanan Saya</h2>
+            <div id="daftarPesanan">
+                <p>Belum ada pesanan.</p>
+            </div>
+        </section>
+    </main>
+
+    <footer>
+        <p>GoLokal | Project Cloud Computing</p>
+    </footer>
+
+</body>
+</html>
+
+const form = document.getElementById("orderForm");
+const pesan = document.getElementById("pesan");
+const daftarPesanan = document.getElementById("daftarPesanan");
+
+const API_URL = "http://localhost:8080";
+
+form.addEventListener("submit", async function(event) {
+    event.preventDefault();
+
+    const nama = document.getElementById("nama").value;
+    const layanan = document.getElementById("layanan").value;
+    const asal = document.getElementById("asal").value;
+    const tujuan = document.getElementById("tujuan").value;
+
+    try {
+        const response = await fetch(`${API_URL}/api/orders`, {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json"
+            },
+            body: JSON.stringify({
+                nama: nama,
+                layanan: layanan,
+                asal: asal,
+                tujuan: tujuan
+            })
+        });
+
+        const data = await response.json();
+
+        if (!response.ok) {
+            throw new Error(data.message);
+        }
+
+        pesan.textContent = "Pesanan berhasil dibuat!";
+
+        form.reset();
+
+        tampilkanPesanan();
+
+    } catch (error) {
+        console.error(error);
+        pesan.textContent = "Gagal membuat pesanan: " + error.message;
+    }
+});
+
+async function tampilkanPesanan() {
+    try {
+        const response = await fetch(`${API_URL}/api/orders`);
+        const orders = await response.json();
+
+        daftarPesanan.replaceChildren();
+
+        if (orders.length === 0) {
+            daftarPesanan.innerHTML = "<p>Belum ada pesanan.</p>";
+            return;
+        }
+
+        orders.forEach(order => {
+            const kartu = document.createElement("div");
+
+            kartu.style.border = "1px solid #ccd8cf";
+            kartu.style.padding = "12px";
+            kartu.style.marginTop = "12px";
+            kartu.style.borderRadius = "8px";
+
+            kartu.innerHTML = `
+                <h3>Pesanan #${order.id}</h3>
+                <p>${order.nama} | ${order.layanan}</p>
+                <p>${order.asal} → ${order.tujuan}</p>
+                <p>Estimasi: Rp${order.harga.toLocaleString("id-ID")}</p>
+                <p>Status: ${order.status}</p>
+            `;
+
+            daftarPesanan.appendChild(kartu);
+        });
+
+    } catch (error) {
+        console.error(error);
+        daftarPesanan.innerHTML =
+            "<p>Backend belum terhubung.</p>";
+    }
+}
+
+// Memuat pesanan saat halaman dibuka
+tampilkanPesanan();
+
+
+
+
+body {
+    margin: 0;
+    font-family: Arial, sans-serif;
+    background: #f2f7f3;
+    color: #20352a;
+}
+
+header {
+    background: #087f5b;
+    color: white;
+    padding: 20px;
+    text-align: center;
+}
+
+header h1 {
+    margin: 0;
+    font-size: 32px;
+}
+
+header span {
+    color: #b7f7c8;
+}
+
+.hero {
+    text-align: center;
+    padding: 30px 20px;
+    background: #dff5e6;
+}
+
+.hero h2 {
+    color: #087f5b;
+}
+
+.card {
+    max-width: 500px;
+    margin: 24px auto;
+    padding: 24px;
+    background: white;
+    border-radius: 12px;
+    box-shadow: 0 3px 12px #00000010;
+}
+
+label {
+    display: block;
+    margin-top: 14px;
+    margin-bottom: 6px;
+    font-weight: bold;
+}
+
+input, select {
+    width: 100%;
+    padding: 12px;
+    box-sizing: border-box;
+    border: 1px solid #ccd8cf;
+    border-radius: 7px;
+    font-size: 15px;
+}
+
+button {
+    width: 100%;
+    margin-top: 20px;
+    padding: 13px;
+    border: none;
+    border-radius: 7px;
+    background: #087f5b;
+    color: white;
+    font-size: 16px;
+    font-weight: bold;
+    cursor: pointer;
+}
+
+button:hover {
+    background: #066b4d;
+}
+
+#pesan {
+    color: #087f5b;
+    font-weight: bold;
+}
+
+footer {
+    padding: 20px;
+    text-align: center;
+    color: #66756b;
+}
+
+@media (max-width: 600px) {
+    .card {
+        margin: 18px 12px;
+        padding: 18px;
+    }
+}
+
+
+
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GoLokal - Login</title>
+
+    <style>
+        body {
+            margin: 0;
+            font-family: Arial, sans-serif;
+            background: #f2f7f3;
+        }
+
+        .container {
+            max-width: 400px;
+            margin: 60px auto;
+            padding: 25px;
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 3px 15px #00000015;
+        }
+
+        h1 {
+            text-align: center;
+            color: #087f5b;
+        }
+
+        h1 span {
+            color: #48a868;
+        }
+
+        h2 {
+            margin-top: 25px;
+        }
+
+        label {
+            display: block;
+            margin-top: 15px;
+            margin-bottom: 6px;
+            font-weight: bold;
+        }
+
+        input {
+            width: 100%;
+            box-sizing: border-box;
+            padding: 12px;
+            border: 1px solid #ccd8cf;
+            border-radius: 7px;
+        }
+
+        button {
+            width: 100%;
+            margin-top: 20px;
+            padding: 12px;
+            border: none;
+            border-radius: 7px;
+            background: #087f5b;
+            color: white;
+            font-size: 16px;
+            cursor: pointer;
+        }
+
+        button:hover {
+            background: #066b4d;
+        }
+
+        #pesan {
+            text-align: center;
+            font-weight: bold;
+        }
+
+        .register {
+            text-align: center;
+            margin-top: 20px;
+        }
+
+        a {
+            color: #087f5b;
+            font-weight: bold;
+        }
+    </style>
+</head>
+
+<body>
+
+<div class="container">
+
+    <h1>Go<span>Lokal</span></h1>
+
+    <h2>Login</h2>
+
+    <form id="loginForm">
+
+        <label>Username</label>
+
+        <input
+            type="text"
+            id="username"
+            placeholder="Masukkan username"
+            required
+        >
+
+        <label>Password</label>
+
+        <input
+            type="password"
+            id="password"
+            placeholder="Masukkan password"
+            required
+        >
+
+        <button type="submit">
+            Login
+        </button>
+
+    </form>
+
+    <p id="pesan"></p>
+
+    <div class="register">
+        Belum punya akun?
+        <a href="register.html">Daftar sekarang</a>
+    </div>
+
+</div>
+
+<script>
+
+const form = document.getElementById("loginForm");
+const pesan = document.getElementById("pesan");
+
+const API_URL = "http://localhost:8080";
+
+form.addEventListener("submit", async function(event) {
+
+    event.preventDefault();
+
+    const username =
+        document.getElementById("username").value;
+
+    const password =
+        document.getElementById("password").value;
+
+    pesan.textContent = "Memproses login...";
+
+    try {
+
+        const response = await fetch(
+            API_URL + "/api/login",
+            {
+                method: "POST",
+
+                headers: {
+                    "Content-Type": "application/json"
+                },
+
+                body: JSON.stringify({
+                    username: username,
+                    password: password
+                })
+            }
+        );
+
+        const data = await response.json();
+
+        if (!response.ok) {
+            throw new Error(data.message);
+        }
+
+        // Simpan data user
+        localStorage.setItem(
+            "user",
+            JSON.stringify(data.user)
+        );
+
+        pesan.textContent =
+    "Login berhasil!";
+
+setTimeout(() => {
+
+    if (data.user.role === "admin") {
+
+        window.location.href = "admin.html";
+
+    } else {
+
+        window.location.href = "index.html";
+
+    }
+
+}, 700);
+
+    } catch (error) {
+
+        console.error(error);
+
+        pesan.textContent =
+            "❌ " + error.message;
+    }
+
+});
+
+</script>
+
+</body>
+</html>
+
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>GoLokal - Register</title>
+
+    <style>
+        body {
+            margin: 0;
+            font-family: Arial, sans-serif;
+            background: #f2f7f3;
+        }
+
+        .container {
+            width: 350px;
+            margin: 80px auto;
+            padding: 25px;
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 3px 15px #00000015;
+        }
+
+        h1 {
+            text-align: center;
+            color: #087f5b;
+        }
+
+        label {
+            display: block;
+            margin-top: 15px;
+            margin-bottom: 6px;
+            font-weight: bold;
+        }
+
+        input {
+            width: 100%;
+            box-sizing: border-box;
+            padding: 12px;
+            border: 1px solid #ccd8cf;
+            border-radius: 7px;
+        }
+
+        button {
+            width: 100%;
+            margin-top: 20px;
+            padding: 12px;
+            border: none;
+            border-radius: 7px;
+            background: #087f5b;
+            color: white;
+            font-size: 16px;
+            cursor: pointer;
+        }
+
+        #pesan {
+            text-align: center;
+            font-weight: bold;
+        }
+
+        .login {
+            text-align: center;
+            margin-top: 20px;
+        }
+
+        a {
+            color: #087f5b;
+            font-weight: bold;
+        }
+    </style>
+</head>
+
+<body>
+
+<div class="container">
+
+    <h1>GoLokal</h1>
+
+    <h2>Register</h2>
+
+    <form id="registerForm">
+
+        <label>Username</label>
+
+        <input
+            type="text"
+            id="username"
+            placeholder="Masukkan username"
+            required
+        >
+
+        <label>Password</label>
+
+        <input
+            type="password"
+            id="password"
+            placeholder="Masukkan password"
+            required
+        >
+
+        <button type="submit">
+            Daftar
+        </button>
+
+    </form>
+
+    <p id="pesan"></p>
+
+    <div class="login">
+        Sudah punya akun?
+        <a href="login.html">Login</a>
+    </div>
+
+</div>
+
+<script>
+
+const form = document.getElementById("registerForm");
+const pesan = document.getElementById("pesan");
+
+const API_URL = "http://localhost:8080";
+
+form.addEventListener("submit", async function(event) {
+
+    event.preventDefault();
+
+    const username =
+        document.getElementById("username").value;
+
+    const password =
+        document.getElementById("password").value;
+
+    pesan.textContent = "Mendaftarkan akun...";
+
+    try {
+
+        const response = await fetch(
+            API_URL + "/api/register",
+            {
+                method: "POST",
+
+                headers: {
+                    "Content-Type": "application/json"
+                },
+
+                body: JSON.stringify({
+                    username: username,
+                    password: password
+                })
+            }
+        );
+
+        const data = await response.json();
+
+        if (!response.ok) {
+            throw new Error(data.message);
+        }
+
+        pesan.textContent =
+            "Registrasi berhasil!";
+
+        form.reset();
+
+        setTimeout(() => {
+            window.location.href = "login.html";
+        }, 1000);
+
+    } catch (error) {
+
+        console.error(error);
+
+        pesan.textContent =
+            "❌ " + error.message;
+    }
+
+});
+
+</script>
+
+</body>
+</html>
+
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GoLokal - Dashboard Driver</title>
+
+    <style>
+        body {
+            margin: 0;
+            font-family: Arial, sans-serif;
+            background: #f2f7f3;
+            color: #20352a;
+        }
+
+        header {
+            background: #087f5b;
+            color: white;
+            padding: 20px;
+            text-align: center;
+        }
+
+        header h1 {
+            margin: 0;
+        }
+
+        header span {
+            color: #b7f7c8;
+        }
+
+        main {
+            max-width: 700px;
+            margin: 30px auto;
+            padding: 0 15px;
+        }
+
+        .card {
+            background: white;
+            padding: 20px;
+            border-radius: 12px;
+            box-shadow: 0 3px 12px #00000010;
+        }
+
+        .pesanan {
+            border: 1px solid #ccd8cf;
+            padding: 15px;
+            margin-top: 15px;
+            border-radius: 8px;
+        }
+
+        select {
+            padding: 10px;
+            border-radius: 6px;
+            border: 1px solid #ccd8cf;
+            margin-top: 8px;
+        }
+
+        button {
+            padding: 10px 15px;
+            border: none;
+            border-radius: 6px;
+            background: #087f5b;
+            color: white;
+            cursor: pointer;
+        }
+
+        #pesan {
+            font-weight: bold;
+            margin-top: 15px;
+        }
+    </style>
+</head>
+
+<body>
+
+<header>
+    <h1>Go<span>Lokal</span></h1>
+    <p>Dashboard Driver / Admin</p>
+    <button onclick="logout()">
+    Logout
+</button>
+</header>
+
+<main>
+
+    <div class="card">
+
+        <h2>Daftar Pesanan</h2>
+
+        <button onclick="ambilPesanan()">
+            🔄 Refresh Pesanan
+        </button>
+
+        <p id="pesan">Menghubungkan ke backend...</p>
+
+        <div id="daftarPesanan"></div>
+
+    </div>
+
+</main>
+
+<script>
+
+const user = JSON.parse(
+    localStorage.getItem("user")
+);
+
+if (!user || user.role !== "admin") {
+
+    alert("Akses ditolak! Halaman ini khusus Admin.");
+
+    window.location.href = "login.html";
+
+}
+
+const API_URL = "http://localhost:8080";
+
+async function ambilPesanan() {
+
+    const pesan = document.getElementById("pesan");
+    const daftar = document.getElementById("daftarPesanan");
+
+    pesan.textContent = "Memuat pesanan...";
+    daftar.replaceChildren();
+
+    try {
+
+        const response = await fetch(
+            API_URL + "/api/orders"
+        );
+
+        console.log("Status API:", response.status);
+
+        if (!response.ok) {
+            throw new Error(
+                "API mengembalikan status " + response.status
+            );
+        }
+
+        const orders = await response.json();
+
+        console.log("Data pesanan:", orders);
+
+        pesan.textContent = "";
+
+        if (orders.length === 0) {
+
+            pesan.textContent = "Belum ada pesanan.";
+
+            return;
+        }
+
+        orders.forEach(order => {
+
+            const kartu = document.createElement("div");
+
+            kartu.className = "pesanan";
+
+            kartu.innerHTML = `
+                <h3>Pesanan #${order.id}</h3>
+
+                <p>
+                    <strong>Nama:</strong>
+                    ${order.nama}
+                </p>
+
+                <p>
+                    <strong>Layanan:</strong>
+                    ${order.layanan}
+                </p>
+
+                <p>
+                    <strong>Asal:</strong>
+                    ${order.asal}
+                </p>
+
+                <p>
+                    <strong>Tujuan:</strong>
+                    ${order.tujuan}
+                </p>
+
+                <p>
+                    <strong>Harga:</strong>
+                    Rp${Number(order.harga).toLocaleString("id-ID")}
+                </p>
+
+                <p>
+                    <strong>Status:</strong>
+                    ${order.status}
+                </p>
+
+                <label>
+                    Ubah Status:
+                </label>
+
+                <br>
+
+                <select onchange="ubahStatus(${order.id}, this.value)">
+
+                    <option value="Menunggu"
+                        ${order.status === "Menunggu" ? "selected" : ""}>
+                        Menunggu
+                    </option>
+
+                    <option value="Diproses"
+                        ${order.status === "Diproses" ? "selected" : ""}>
+                        Diproses
+                    </option>
+
+                    <option value="Selesai"
+                        ${order.status === "Selesai" ? "selected" : ""}>
+                        Selesai
+                    </option>
+
+                </select>
+            `;
+
+            daftar.appendChild(kartu);
+
+        });
+
+    } catch (error) {
+
+        console.error("ERROR:", error);
+
+        pesan.textContent =
+            "❌ Gagal terhubung ke backend: " + error.message;
+    }
+}
+
+
+async function ubahStatus(id, status) {
+
+    try {
+
+        const response = await fetch(
+            API_URL + "/api/orders/" + id + "/status",
+            {
+                method: "PUT",
+
+                headers: {
+                    "Content-Type": "application/json"
+                },
+
+                body: JSON.stringify({
+                    status: status
+                })
+            }
+        );
+
+        const data = await response.json();
+
+        console.log("Hasil perubahan:", data);
+
+        if (!response.ok) {
+            throw new Error(data.message);
+        }
+
+        alert("Status berhasil diubah!");
+
+        ambilPesanan();
+
+    } catch (error) {
+
+        console.error("ERROR:", error);
+
+        alert(
+            "Gagal mengubah status: " +
+            error.message
+        );
+    }
+}
+
+function logout() {
+
+    localStorage.removeItem("user");
+
+    window.location.href = "login.html";
+
+}
+
+ambilPesanan();
+
+</script>
+
+</body>
+</html>
